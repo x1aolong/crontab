@@ -32,13 +32,53 @@ ThinkPHP5.1对底层架构做了进一步的改进，减少依赖，其主要特
 
 ## 安装
 
-使用composer安装
-
++ 配置 host文件 /etc/hosts 
 ~~~
-    
+    127.0.0.1   dev.crontab.com
 ~~~
++ 配置 mysql数据库文件
+~~~
+    将 .sql 文件导入数据库中
+~~~
++ 使用 composer安装必要组建
+~~~
+    composer install
+~~~
++ 配置 nginx
+~~~
+    server {
+        listen  80;
+        server_name dev.crontab.com;    # 虚拟域名
+        index   index.php index.html;
+        root   /data/wwwroot/crontab/public;    # 项目路径
 
+        access_log  /data/logs/nginx/crontab_access.log main;
+        error_log   /data/logs/nginx/crontab_error.log;
 
+            location / {
+
+             if (!-e $request_filename){
+                #rewrite ^/(.*) /index.php?r=$1 last;   # yii2
+                rewrite ^(.*)$ /index.php?s=/$1 last;   # tp
+            }
+        }
+
+        location ~ /\.(svn|git|hg|ht|bzr|cvs)(/|$) {
+             return 403;
+        }
+
+        location ~ \.php$ {
+                try_files  $uri = 404;
+                include  fastcgi_params;
+                fastcgi_pass   h5web;
+                fastcgi_index  index.php;
+        }
+}
+~~~
++ 控制文件
+~~~
+    vendor/autorun/crontab_active.php
+~~~
 
 ## 在线手册
 

@@ -23,6 +23,15 @@
                             <div class="hr-line-dashed"></div>
 
                             <div class="form-group">
+                                <label class="col-sm-2 control-label">任务描述</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="info" id="info"> <span class="help-block m-b-none"></span>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+
+
+                            <div class="form-group">
                                 <label class="col-sm-2 control-label">是否加锁</label>
                                 <div class="col-sm-10">
                                     <div class="radio i-checks">
@@ -35,7 +44,8 @@
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-4 col-sm-offset-2">
-                                    <button class="btn btn-primary submit-crontab">提交定时任务</button>
+                                    <button type="button" class="btn btn-primary submit-crontab">提交定时任务</button>
+                                    <button type="button" class="btn btn-default" onclick="history.back(-1);">返回</button>
                                 </div>
                             </div>
                         </form>
@@ -53,7 +63,6 @@
 <script>
     $(function () {
         $('.submit-crontab').click(function () {
-            console.log($('form').serialize());
             $.ajax({
                 url: "{:url('admin/Crontab/add')}",
                 type: "post",

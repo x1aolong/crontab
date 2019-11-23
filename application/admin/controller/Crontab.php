@@ -9,8 +9,7 @@ class Crontab extends Base
 {
     public function list ()
     {
-        // ->where(['status'=>0])
-        $crontabList = model('Crontab')->order('id', 'desc')->paginate(10);
+        $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(10);
         $viewData = [
             'crontabList' => $crontabList
         ];
@@ -21,7 +20,9 @@ class Crontab extends Base
     public function checkAndSave($data, $id = 0)
     {
         $command = $data['command'];
-        $lock = $data['lock'];
+        $info    = $data['info'];
+        $lock    = $data['lock'];
+
         // 验证时间格式正确性
         $slices = preg_split("/[\s]+/", $command, 6);
         if (count($slices) !== 6) {
@@ -78,6 +79,12 @@ class Crontab extends Base
                 $this->error(Config::get('crontabGeneral.FileError'));
             }
         }
+
+        // 检查info
+        if ($info == '') {
+            $this->error(Config::get('crontabGeneral.InfoError'));
+        }
+
         // 检测锁状态
         if ($lock == 1) // 有锁操作
         {
@@ -95,6 +102,7 @@ class Crontab extends Base
             'ip'        => $_SERVER['SERVER_ADDR'],
             'shell_file'=> $filetype[0].$ext,
             'parameter' => $parameter,
+            'info'      => $info,
             'is_lock'   => $lock
         );
         if ($id == 0) {
@@ -120,6 +128,7 @@ class Crontab extends Base
         if (request()->isAjax()) {
             $command = [
                 'command' => trim(input('post.command')),
+                'info' => trim(input('post.info')),
                 'lock' => input('post.lock')
             ];
             $result  = $this->checkAndSave($command);
@@ -134,7 +143,7 @@ class Crontab extends Base
 
     public function edit ()
     {
-        $crontabInfo = model('Crontab')->field(['id', 'time', 'shell_file', 'parameter', 'status', 'is_lock'])->where(['id' => input('id')])->find();
+        $crontabInfo = model('Crontab')->field(['id', 'time', 'shell_file', 'parameter', 'status', 'is_lock', 'info'])->where(['id' => input('id')])->find();
         $viewData = [
             'crontabInfo' => $crontabInfo
         ];
@@ -143,6 +152,7 @@ class Crontab extends Base
         if (request()->isAjax()) {
             $command = [
                 'command' => trim(input('post.command')),
+                'info' => trim(input('post.info')),
                 'lock' => input('post.lock')
             ];
             $result = $this->checkAndSave($command, input('post.id'));
@@ -175,4 +185,20 @@ class Crontab extends Base
             }
         }
     }
+
+    // 搜索
+    public function search()
+    {
+        if (request()->isAjax()){
+            $keyword = input('post.info');
+            $crontabList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->order('run_time', 'asc')->paginate(10);
+            $viewData = [
+                'crontabList' => $crontabList
+            ];
+            $this->assign($viewData);
+        }
+
+    }
+
+
 }

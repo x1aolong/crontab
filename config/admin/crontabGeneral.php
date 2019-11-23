@@ -15,6 +15,7 @@ return [
     'addErrorMsg'       => '定时任务添加失败',
     'editSuccessMsg'    => '定时任务更新成功',
     'editErrorMsg'      => '定时任务更新失败',
+    'InfoError'         => '为便于查看，建议您填写任务描述',
     'setLockCommand'    => ' /usr/bin/flock -xn /root/',
     'setLockCommandLast'=> '.lock -c "',
     'setLockCommandOver'=> '"',

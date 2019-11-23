@@ -8,13 +8,13 @@ Route::group('index', function ()
 Route::group('admin', function ()
 {
     // 后台路由
-    Route::rule('/', 'admin/index/login', 'get|post');                  // Login页
-    Route::rule('index', 'admin/home/index', 'get');                    // 后台首页
-    Route::rule('signout', 'admin/home/signout', 'post');               // 退出账户
-    Route::rule('crontabadd', 'admin/crontab/add', 'get|post');         // 添加定时任务
-    Route::rule('crontablist', 'admin/crontab/list', 'get');            // 定时任务列表
-    Route::rule('api', 'admin/api/getAllCrontabList', 'get');           // 接口获取所有db中的定时任务
-    Route::rule('exec', 'admin/api/exec', 'get');                       // 脚本文件
+    Route::rule('/', 'admin/index/login', 'get|post');                      // Login页
+    Route::rule('index', 'admin/home/index', 'get');                        // 后台首页
+    Route::rule('signout', 'admin/home/signout', 'post');                   // 退出账户
+    Route::rule('crontabadd', 'admin/crontab/add', 'get|post');             // 添加定时任务
+    Route::rule('crontablist/[:info]', 'admin/crontab/list', 'get|post');   // 定时任务列表
+    Route::rule('api', 'admin/api/getAllCrontabList', 'get');               // 接口获取所有db中的定时任务
+    Route::rule('exec', 'admin/api/exec', 'get');                           // 脚本文件
 
     Route::rule('crontabedit/[:id]', 'admin/crontab/edit', 'get|post'); // todo 编辑退出账户
     Route::rule('crontabdel', 'admin/crontab/del', 'post');             // todo 删除退出账户

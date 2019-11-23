@@ -25,7 +25,7 @@ class Index extends Base
             $result = model('Admin')->login($data);
             # 判断返回结果
             if ($result == 1) {
-                $this->success('登录成功', 'admin/home/index');
+                $this->success('登录成功', 'admin/crontab/list');
             } else {
                 $this->error($result);
             }

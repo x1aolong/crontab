@@ -1,0 +1,217 @@
+{include file="nav/_header" /}
+
+        <div class="wrapper wrapper-content">
+
+            <div class="container"></div>
+
+            <!-- list -->
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>定时任务列表</h5>
+                            <div class="ibox-tools">
+                                <a class="collapse-link">
+                                    <i class="fa fa-chevron-up"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+
+                            <div class="row">
+                                <div class="col-sm-9 m-b-xs">
+                                    <div data-toggle="buttons" class="btn-group">
+                                        <button type="button" class="btn btn-primary btn-sm jump2add">添加任务</button>
+                                    </div>
+                                    <div data-toggle="buttons" class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm jump2pause">查看暂停任务列表</button>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="input-group">
+                                        <input type="text" placeholder="搜索" class="input-sm form-control" id="keyword" name="info" value="">
+                                        <span class="input-group-btn">
+                                        <button type="button" class="btn btn-sm btn-primary search-crontab">搜索</button>
+                                    </span>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="tab">
+                                    <thead>
+                                        <tr>
+                                            <th>任务描述</th>
+                                            <th>任务详情</th>
+                                            <th>执行时间</th>
+                                            <th>运行时间</th>
+                                            <th>ip地址</th>
+                                            <th>脚本文件</th>
+                                            <th>脚本参数</th>
+                                            <th>是否上锁</th>
+                                            <th>任务状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    {volist name="crontabList" id="vo"}
+                                        <tr name="tableTD">
+                                            <td>{$vo.info}</td>
+                                            <td>{$vo.cmd}</td>
+                                            <td>{$vo.time}</td>
+                                            <td>{if $vo.run_time == '' } - {else}$vo.run_time|date="Y-m-d H:i:s"}{/if}</td>
+                                            <td>{$vo.ip}</td>
+                                            <td>{$vo.shell_file}</td>
+                                            <td>{$vo.parameter}</td>
+                                            <td>{if $vo.is_lock == 1} <span class="label label-success">有锁</span> {else} <span class="label">无锁</span> {/if}</td>
+                                            <td>{if $vo.status == 0} <span class="label label-success">启动</span> {else} <span class="label">暂停</span> {/if}</td>
+                                            <td>
+                                                <a href="{:url('admin/crontab/edit', ['id' => $vo.id])}" class="btn btn-primary btn-bitbucket">
+                                                    <i class="fa fa-wrench"></i>
+                                                </a>
+                                                <a del_id="{$vo.id}" class="btn btn-warning btn-bitbucket pause-crontab">
+                                                    <i class="fa fa-times"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {/volist}
+
+                                    </tbody>
+                                </table>
+
+                                <div class="btn-group">
+                                    <div class="widget-header">
+                                        <div class="widget-buttons">
+                                            {$crontabList->render()|raw}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        </div>
+        </div>
+        </div>
+
+        {include file="nav/_footer" /}
+
+        <script>
+            $(function () {
+                toAdd = "{:url('admin/Crontab/add')}"
+                $('.jump2add').click(function () {
+                    location.href = toAdd;
+                });
+                return false;
+            });
+
+            $(function () {
+                toPause = "{:url('admin/Crontab/pause')}"
+                $('.jump2pause').click(function () {
+                    alert('页面建设中..');
+                });
+                return false;
+            });
+
+            $(function () {
+                $('.pause-crontab').click(function () {
+                    var id = $(this).attr('del_id');
+                    layer.confirm('确定变更此任务的状态？', {
+                        title: '变更任务状态',
+                        icon: 3,
+                    }, function (index) {
+                        // console.log(index);
+                        layer.close(index);
+                        $.ajax({
+                            url: "{:url('admin/Crontab/del')}",
+                            type: "post",
+                            data: {id: id},
+                            dataType: "JSON",
+                            success: function(data) {
+                                if (data.code == 1) {
+                                    layer.msg(data.msg, {
+                                        icon: 6,
+                                        time: 2000
+                                    }, function () {
+                                        location.href = data.url;
+                                    });
+                                } else {
+                                    layer.open({
+                                        title: '变更任务状态',
+                                        content: data.msg,
+                                        icon: 5,
+                                        anim: 6
+                                    });
+                                }
+                            }
+                        })
+                    });
+                });
+                return false;
+            });
+
+            $(function () {
+                $('').ready(function () {
+                    var arr=$("table>tbody>tr>td:nth-child(6)");
+
+                    for(var i=0;i<arr.length;i++){
+                        //alert($(arr[i]).text());//分别一个个弹出.
+                        var data = $(arr[i]).text();
+                        var ext = data.split('.');
+                        if (ext[1] == 'php') {
+                            // php文件不做处理
+                        } else if (ext[1] == 'py') {
+                            $(arr[i]).css("color", "red"); // 想根据不同的后缀名 上不同的css颜色
+                        } else {
+                            // 除开这两类文件不做处理
+                        }
+                    }
+                });
+                return false;
+            });
+
+            $(function () {
+                $('.search-crontab').click(function () {
+                    var info = $.trim($('#keyword').val());
+
+                    if (info !== '') {
+                        $.ajax({
+                            url: "{:url('admin/Crontab/search')}",
+                            type: "post",
+                            data: {'info': info},
+                            dataType: "JSON",
+                            success: function(data) {
+                                if (data.code == 1) {
+                                    layer.msg(data.msg, {
+                                        icon: 6,
+                                        time: 2000
+                                    }, function () {
+                                        location.href = data.url;
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+                return false;
+            });
+        </script>
+
+        </body>
+        <!--  /Body -->
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>

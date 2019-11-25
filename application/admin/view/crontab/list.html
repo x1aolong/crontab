@@ -50,7 +50,7 @@
                                 </div>
 
                             </div>
-                            <div class="table-responsive">
+                            <div class="table-responsive" id="main-table">
                                 <table class="table table-striped" id="tab">
                                     <thead>
                                         <tr>
@@ -100,6 +100,11 @@
                                         </div>
                                     </div>
                                 </div>
+
+                            </div>
+
+                            <div class="table-responsive" id="search-table">
+
 
                             </div>
 
@@ -203,19 +208,48 @@
                             dataType: "JSON",
                             success: function(data) {
                                 if (data.code == 1) {
-                                    layer.msg(data.msg, {
-                                        icon: 6,
-                                        time: 2000
-                                    }, function () {
-                                        location.href = data.url;
+                                    var tableData = data.searchTableList.data;
+                                    var headhtml =  '<table class="table table-striped" id="">\n' +
+                                        '   <thead>\n' +
+                                        '       <tr>\n' +
+                                        '           <th>任务描述</th>\n' +
+                                        '           <th>任务详情</th>\n' +
+                                        '           <th>执行时间</th>\n' +
+                                        '           <th>运行时间</th>\n' +
+                                        '           <th>ip地址</th>\n' +
+                                        '           <th>脚本文件</th>\n' +
+                                        '           <th>脚本参数</th>\n' +
+                                        '           <th>是否上锁</th>\n' +
+                                        '           <th>任务状态</th>\n' +
+                                        '           <th>操作</th>\n' +
+                                        '       </tr>\n' +
+                                        '   </thead>\n' +
+
+                                        '   <tbody>\n';
+                                    var bodyhtml = '';
+
+                                    var foothtml =
+                                        '   </tbody>\n' +
+                                        '</table>' ;
+                                    $.each(tableData, function(idx, obj) {
+
+
+
+                                    bodyhtml = bodyhtml +
+                                        '       <tr name="tableTD">\n' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       <td>'+obj.cmd+'</td>' +
+                                        '       <td>'+obj.time+'</td>' +
+                                        '       <td>'+obj.run_time+'</td>' +
+                                        '       <td>'+obj.shell_file+'</td>' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       <td>'+obj.info+'</td>' +
+                                        '       </tr>'
                                     });
-                                } else {
-                                    layer.open({
-                                        title: '变更任务状态',
-                                        content: data.msg,
-                                        icon: 5,
-                                        anim: 6
-                                    });
+                                    $("#search-table").html(headhtml+bodyhtml+foothtml);
                                 }
                             }
                         });

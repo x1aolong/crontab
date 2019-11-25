@@ -11,7 +11,8 @@ class Crontab extends Base
     {
         $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(10);
         $viewData = [
-            'crontabList' => $crontabList
+            'crontabList' => $crontabList,
+            'searchTableList' => '',
         ];
         $this->assign($viewData);
         return view();
@@ -22,89 +23,114 @@ class Crontab extends Base
         $command = $data['command'];
         $info    = $data['info'];
         $lock    = $data['lock'];
-
         // 验证时间格式正确性
         $slices = preg_split("/[\s]+/", $command, 6);
         if (count($slices) !== 6) {
             $this->error('命令参数缺失');
         } else {
-            $file = array_pop($slices);
-            $filetype = explode('.', $file); // 截取命令判断类型
+            $file       = array_pop($slices);
+            $filetype   = explode(' ', $file);
         }
+        // 检测命令参数书写是否合法
+        if (count($filetype) > 3) {
+            $this->error('命令不合法, 请检查是否有多余空格');
+        }
+        // 没写文件路径
+        if ($file == $filetype[0]) {
+            $this->error('请填写文件路径');
+        }
+        // 拆分参数
+        $path           = $filetype[0];
+        $file           = $filetype[1];
+        $params         = count($filetype) == 3 ? $filetype[2] : '';
+        $pathArr        = explode('/', $path);
+        $startUpFile    = array_pop($pathArr);
+        $findPath       = implode($pathArr, '/');
+        $findPath       = $findPath . '/';
+        $time           = implode(' ', $slices);
+        $getExt         = explode('.', $file);
+        $fileExt        = $getExt[1];
         // 检测时间是否合法
-        $time = implode(' ', $slices);
         if (!preg_match(Config::get('crontabGeneral.Preg'), trim($time))) {
             $this->error(Config::get('crontabGeneral.TimeError'));
         }
-        $parameter = '';
-        // php文件处理
-        if (strstr($filetype[1], 'php'))
-        {
-            // 判断这个文件是否存在于服务器上 path => /data/wwwroot/spider/yyjg_php/scr/xxx.php
-            if (Config::get('crontabGeneral.projectLocation') != 'local') {
-                $file_existence = file_exists(Config::get('crontabGeneral.PhpFiles') . $filetype[0] . '.php');
-                if (!$file_existence) {
-                    $this->error('脚本文件' . $filetype[0] . '.php不存在');
+        // 线上环境需要检测脚本文件是否存在
+        if (Config::get('crontabGeneral.projectLocation') != 'local') {
+            // 存在启动文件的情况 检查路径下启动文件是否存在
+            if ($startUpFile != '') {
+                if (!file_exists($path)) {
+                    $this->error('启动文件' . $startUpFile . '不存在');
                 }
             }
-            $ext = '.php';
-            if (strlen($filetype[1]) == 3) {
-                $insertStr = $time . Config::get('crontabGeneral.PhpEnablePath') . $filetype[0] . '.php'; // 不带参数的php脚本
-            } elseif(strlen($filetype[1]) > 3) {
-                $res = explode(' ', $filetype[1]); // 携带参数 截取
-                $parameter = $res[1]; // 参数
-                $insertStr = $time . Config::get('crontabGeneral.PhpEnablePath') . $filetype[0] . '.php ' . $parameter;
-            } else {
-                $this->error(Config::get('crontabGeneral.FileError'));
+            // 检查命令中脚本文件是否存在
+            if (file_exists($findPath . $file)){
+                $this->error('脚本文件' . $file . '不存在');
             }
         }
-        // python文件处理
-        if (strstr($filetype[1], 'py'))
-        {
-            // 判断这个文件是否存在于服务器上 path => /data/wwwroot/spider/xxx.py
-            if (Config::get('crontabGeneral.projectLocation') != 'local') {
-                $file_existence = file_exists('/data/wwwroot/spider/'.$filetype[0].'.py');
-                if (!$file_existence) {
-                    $this->error('脚本文件'.$filetype[0].'.py不存在');
+        // 获取启动文件的后缀名
+        if ($startUpFile != '') {
+            if (!strstr($startUpFile, '.')) {
+                $this->error('命令路径有误');
+            }
+            $gettartUpFileExt = explode('.', $startUpFile);
+            if(count($gettartUpFileExt) == 1){
+                $this->error(Config::get('路径缺失'));
+            }
+            $startUpFileExt   = $gettartUpFileExt[1];
+        }
+        // 根据文件类型进行数据处理
+        if ($fileExt == 'php') {
+            // 针对shell文件启动php脚本的情况
+            if ($startUpFile != '') {
+                // 带启动文件的命令
+                if ($startUpFileExt == 'sh') {
+                    $findPath = $path;
+                    $insertStr = $time . ' /bin/bash ' . $findPath . ' ' . $file . ' ' . $params;
+                } else {
+                    $this->error('启动器文件只支持shell文件');
+                }
+            } else {
+                // 检查命令带参数情况
+                if ($params != '') {
+                    $insertStr = $time . ' cd ' . $findPath . '&&/usr/bin/php ' . $file . ' ' . $params;
+                } else {
+                    $insertStr = $time . ' cd ' . $findPath . '&&/usr/bin/php ' . $file;
                 }
             }
-            $ext = '.py';
-            if (strlen($filetype[1]) == 2) {
-                $insertStr = $time . Config::get('crontabGeneral.PythonEnablePath') . $filetype[0] . '.py';
-            } elseif(strlen($filetype[1]) > 2) {
-                $res = explode(' ', $filetype[1]);
-                $parameter = $res[1];
-                $insertStr = $time . Config::get('crontabGeneral.PythonEnablePath') . $filetype[0] . '.py ' . $parameter;
+        } else if ($fileExt == 'py') {
+            // python不存在shell启动文件的情况
+            if ($params != '') {
+                $insertStr = $time . ' cd ' . $findPath . '&&/usr/bin/python ' . $file . ' ' . $params;
             } else {
-                $this->error(Config::get('crontabGeneral.FileError'));
+                $insertStr = $time . ' cd ' . $findPath . '&&/usr/bin/python ' . $file;
             }
+        } else {
+            $this->error('脚本类型不支持');
         }
-
-        // 检查info
+        // 检查info信息
         if ($info == '') {
             $this->error(Config::get('crontabGeneral.InfoError'));
         }
-
-        // 检测锁状态
-        if ($lock == 1) // 有锁操作
-        {
+        // 文件加锁操作
+        if ($lock == 1) {
             // */1 * * * * /usr/bin/flock -xn /root/addtype.lock -c "cd /data/wwwroot/spider/yyjh_php/scr&&/usr/bin/php ./addreleasetype.php"
-            $needCutStr         = $insertStr;
-            $getCommandString   = explode(' ', $needCutStr, 6);
-            $fileAndCommand     = array_pop($getCommandString);
-            $insertStr          =  $time . Config::get('crontabGeneral.setLockCommand') . $filetype[0] . Config::get('crontabGeneral.setLockCommandLast') . $fileAndCommand . Config::get('crontabGeneral.setLockCommandOver');
+            $lockNameArr = explode('.', $file);
+            $lockNameStr = $lockNameArr[0];
+            $ext = $fileExt == 'py' ? 'python' : 'php';
+            $params = $params == '' ? '' : ' '.$params;
+            $insertStr = $time . ' /usr.bin/flock -xn /root/' . $lockNameStr.'.lock -c "cd ' . $findPath . '&&/usr/bin/' . $ext . ' ' . $file . $params .'"';
         }
-        // todo shell脚本暂时不考虑处理机制
-
+        // 封装入库数据
         $insertData = array (
             'cmd'       => $insertStr,
             'time'      => $time,
             'ip'        => $_SERVER['SERVER_ADDR'],
-            'shell_file'=> $filetype[0].$ext,
-            'parameter' => $parameter,
+            'shell_file'=> $file,
+            'parameter' => $params,
             'info'      => $info,
             'is_lock'   => $lock
         );
+        // 根据参数id存在判断是否为update操作
         if ($id == 0) {
             // add
             $result = model('Crontab')->allowField(true)->save($insertData);
@@ -143,7 +169,31 @@ class Crontab extends Base
 
     public function edit ()
     {
-        $crontabInfo = model('Crontab')->field(['id', 'time', 'shell_file', 'parameter', 'status', 'is_lock', 'info'])->where(['id' => input('id')])->find();
+        $crontabInfo = model('Crontab')->field(['id', 'cmd', 'time', 'shell_file', 'parameter', 'status', 'is_lock', 'info'])->where(['id' => input('id')])->find();
+        $slices     = preg_split("/[\s]+/", $crontabInfo['cmd'], 6);
+        $file       = array_pop($slices);
+        if ($crontabInfo['is_lock'] == 1) {
+            // 带锁文件
+            $fileStr  = explode(' ', $file);
+            $fileName = array_pop($fileStr);
+            $filePath = array_pop($fileStr);
+            $filetype = explode('&&', $filePath);
+            $quotation= explode('"',$fileName); // 切除双引号
+            $fileName = $quotation[0];
+            $crontabInfo['cmd'] = implode(' ', $slices) . ' ' . $filetype[0] . ' ' . $fileName;
+        } else {
+            // 无锁文件
+            $filetype   = explode('&&', $file);
+            $path       = explode(' ', $filetype[0]);
+            $fileStr    = explode(' ', $filetype[1]);
+            if ($crontabInfo['parameter'] == '') {
+                // 不带参 不带锁
+                $crontabInfo['cmd'] = implode(' ', $slices) . ' ' . $path[1] . ' ' . $fileStr[1];
+            } else {
+                // 带参不带锁
+                $crontabInfo['cmd'] = implode(' ', $slices) . ' ' . $path[1] . ' ' . $fileStr[1] . ' ' . $crontabInfo['parameter'];
+            }
+        }
         $viewData = [
             'crontabInfo' => $crontabInfo
         ];
@@ -191,13 +241,13 @@ class Crontab extends Base
     {
         if (request()->isAjax()){
             $keyword = input('post.info');
-            $crontabList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->order('run_time', 'asc')->paginate(10);
-            $viewData = [
-                'crontabList' => $crontabList
-            ];
-            $this->assign($viewData);
+            // paginate(10);
+            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->order('run_time', 'asc')->paginate(10);
+            if ($searchTableList){
+                $res = ["code" => 1, "searchTableList" => $searchTableList ];
+                return json($res);
+            }
         }
-
     }
 
 

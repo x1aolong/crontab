@@ -208,6 +208,7 @@
                             dataType: "JSON",
                             success: function(data) {
                                 if (data.code == 1) {
+                                    $('#main-table').css('display', 'none');
                                     var tableData = data.searchTableList.data;
                                     var headhtml =  '<table class="table table-striped" id="">\n' +
                                         '   <thead>\n' +
@@ -233,26 +234,27 @@
                                         '</table>' ;
                                     $.each(tableData, function(idx, obj) {
 
-
-
                                     bodyhtml = bodyhtml +
                                         '       <tr name="tableTD">\n' +
-                                        '       <td>'+obj.info+'</td>' +
-                                        '       <td>'+obj.cmd+'</td>' +
-                                        '       <td>'+obj.time+'</td>' +
-                                        '       <td>'+obj.run_time+'</td>' +
-                                        '       <td>'+obj.shell_file+'</td>' +
-                                        '       <td>'+obj.info+'</td>' +
-                                        '       <td>'+obj.info+'</td>' +
-                                        '       <td>'+obj.info+'</td>' +
-                                        '       <td>'+obj.info+'</td>' +
-                                        '       <td>'+obj.info+'</td>' +
+                                        '           <td>'+obj.info+'</td>' +
+                                        '           <td>'+obj.cmd+'</td>' +
+                                        '           <td>'+obj.time+'</td>' +
+                                        '           <td>'+obj.run_time+'</td>' +
+                                        '           <td>'+obj.ip+'</td>' +
+                                        '           <td>'+obj.shell_file+'</td>' +
+                                        '           <td>'+obj.parameter+'</td>' +
+                                        '           <td>'+obj.is_lock+'</td>' +
+                                        '           <td>'+obj.status+'</td>' +
+                                        '           <td><a href="{:url('admin/crontab/edit', ['id' => $vo.id])}" class="btn btn-primary btn-bitbucket"><i class="fa fa-wrench"></i></a></td>' +
                                         '       </tr>'
                                     });
                                     $("#search-table").html(headhtml+bodyhtml+foothtml);
                                 }
                             }
                         });
+                    } else {
+                        $('#main-table').css('display', 'block');
+                        $('#search-table').css('display', 'none');
                     }
                 });
                 return false;

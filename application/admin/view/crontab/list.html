@@ -73,7 +73,7 @@
                                             <td>{$vo.info}</td>
                                             <td>{$vo.cmd}</td>
                                             <td>{$vo.time}</td>
-                                            <td>{if $vo.run_time == '' } - {else}$vo.run_time|date="Y-m-d H:i:s"}{/if}</td>
+                                            <td>{if $vo.run_time == '' } - {else} {$vo.run_time|date="Y-m-d H:i:s"} {/if}</td>
                                             <td>{$vo.ip}</td>
                                             <td>{$vo.shell_file}</td>
                                             <td>{$vo.parameter}</td>
@@ -209,7 +209,9 @@
                             success: function(data) {
                                 if (data.code == 1) {
                                     $('#main-table').css('display', 'none');
+                                    $('#search-table').empty();
                                     var tableData = data.searchTableList.data;
+
                                     var headhtml =  '<table class="table table-striped" id="">\n' +
                                         '   <thead>\n' +
                                         '       <tr>\n' +
@@ -249,6 +251,7 @@
                                         '       </tr>'
                                     });
                                     $("#search-table").html(headhtml+bodyhtml+foothtml);
+
                                 }
                             }
                         });

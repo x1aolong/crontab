@@ -140,43 +140,6 @@
             });
 
             $(function () {
-                $('.pause-crontab').click(function () {
-                    var id = $(this).attr('del_id');
-                    layer.confirm('确定变更此任务的状态？', {
-                        title: '变更任务状态',
-                        icon: 3,
-                    }, function (index) {
-                        // console.log(index);
-                        layer.close(index);
-                        $.ajax({
-                            url: "{:url('admin/Crontab/del')}",
-                            type: "post",
-                            data: {id: id},
-                            dataType: "JSON",
-                            success: function(data) {
-                                if (data.code == 1) {
-                                    layer.msg(data.msg, {
-                                        icon: 6,
-                                        time: 2000
-                                    }, function () {
-                                        location.href = data.url;
-                                    });
-                                } else {
-                                    layer.open({
-                                        title: '变更任务状态',
-                                        content: data.msg,
-                                        icon: 5,
-                                        anim: 6
-                                    });
-                                }
-                            }
-                        })
-                    });
-                });
-                return false;
-            });
-
-            $(function () {
                 $('').ready(function () {
                     var arr=$("table>tbody>tr>td:nth-child(6)");
 
@@ -208,8 +171,9 @@
                             dataType: "JSON",
                             success: function(data) {
                                 if (data.code == 1) {
-                                    $('#main-table').css('display', 'none');
                                     $('#search-table').empty();
+                                    $('#main-table').css('display', 'none');
+                                    $('#search-table').css('display', 'block');
                                     var tableData = data.searchTableList.data;
 
                                     var headhtml =  '<table class="table table-striped" id="">\n' +
@@ -247,7 +211,10 @@
                                         '           <td>'+obj.parameter+'</td>' +
                                         '           <td>'+obj.is_lock+'</td>' +
                                         '           <td>'+obj.status+'</td>' +
-                                        '           <td><a href="{:url('admin/crontab/edit', ['id' => $vo.id])}" class="btn btn-primary btn-bitbucket"><i class="fa fa-wrench"></i></a></td>' +
+                                        '           <td>' +
+                                        '               <a href="crontabedit/'+obj.id+'" class="btn btn-primary btn-bitbucket"><i class="fa fa-wrench"></i></a>' +
+                                        '               <a del_id="'+obj.id+'" class="btn btn-warning btn-bitbucket pause-crontab"><i class="fa fa-times"></i></a>' +
+                                        '           </td>' +
                                         '       </tr>'
                                     });
                                     $("#search-table").html(headhtml+bodyhtml+foothtml);
@@ -259,6 +226,47 @@
                         $('#main-table').css('display', 'block');
                         $('#search-table').css('display', 'none');
                     }
+                });
+                return false;
+            });
+
+
+            $(function () {
+                $('.pause-crontab').click(function () {
+                    var id = $(this).attr('del_id');
+
+                    console.log(id);
+
+                    layer.confirm('确定变更此任务的状态？', {
+                        title: '变更任务状态',
+                        icon: 3,
+                    }, function (index) {
+                        // console.log(index);
+                        layer.close(index);
+                        $.ajax({
+                            url: "{:url('admin/Crontab/del')}",
+                            type: "post",
+                            data: {id: id},
+                            dataType: "JSON",
+                            success: function(data) {
+                                if (data.code == 1) {
+                                    layer.msg(data.msg, {
+                                        icon: 6,
+                                        time: 2000
+                                    }, function () {
+                                        location.href = data.url;
+                                    });
+                                } else {
+                                    layer.open({
+                                        title: '变更任务状态',
+                                        content: data.msg,
+                                        icon: 5,
+                                        anim: 6
+                                    });
+                                }
+                            }
+                        })
+                    });
                 });
                 return false;
             });

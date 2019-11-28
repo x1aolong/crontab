@@ -12,7 +12,7 @@ Route::group('admin', function ()
     Route::rule('index', 'admin/home/index', 'get');                        // 后台首页
     Route::rule('signout', 'admin/home/signout', 'post');                   // 退出账户
     Route::rule('crontabadd', 'admin/crontab/add', 'get|post');             // 添加定时任务
-    Route::rule('crontablist/[:info]', 'admin/crontab/list', 'get|post');   // 定时任务列表
+    Route::rule('crontablist/[:keyword]', 'admin/crontab/list', 'get|post');   // 定时任务列表
     Route::rule('api', 'admin/api/getAllCrontabList', 'get');               // 接口获取所有db中的定时任务
     Route::rule('exec', 'admin/api/exec', 'get');                           // 脚本文件
 

@@ -15,18 +15,6 @@
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
                                 </a>
-<!--                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">-->
-<!--                                    <i class="fa fa-wrench"></i>-->
-<!--                                </a>-->
-<!--                                <ul class="dropdown-menu dropdown-user">-->
-<!--                                    <li><a href="#">设置选项1</a>-->
-<!--                                    </li>-->
-<!--                                    <li><a href="#">设置选项2</a>-->
-<!--                                    </li>-->
-<!--                                </ul>-->
-<!--                                <a class="close-link">-->
-<!--                                    <i class="fa fa-times"></i>-->
-<!--                                </a>-->
                             </div>
                         </div>
                         <div class="ibox-content">
@@ -44,7 +32,8 @@
                                     <div class="input-group">
                                         <input type="text" placeholder="搜索" class="input-sm form-control" id="keyword" name="info" value="">
                                         <span class="input-group-btn">
-                                        <button type="button" class="btn btn-sm btn-primary search-crontab">搜索</button>
+<!--                                        <button type="button" class="btn btn-sm btn-primary search-crontab">搜索</button>-->
+                                        <button type="button" class="btn btn-sm btn-primary crontab-info">搜索</button>
                                     </span>
                                     </div>
                                 </div>
@@ -95,18 +84,16 @@
 
                                 <div class="btn-group">
                                     <div class="widget-header">
-                                        <div class="widget-buttons">
-                                            {$crontabList->render()|raw}
+                                        <div class="widget-buttons" >
+                                            {if $normal == 0}{$crontabList->render()|raw}{/if}
                                         </div>
                                     </div>
                                 </div>
 
                             </div>
 
-                            <div class="table-responsive" id="search-table">
-
-
-                            </div>
+                            <!-- To be deleted -->
+                            <div class="table-responsive" id="search-table"></div>
 
                         </div>
                     </div>
@@ -155,6 +142,47 @@
                             // 除开这两类文件不做处理
                         }
                     }
+                });
+                return false;
+            });
+
+
+           $(function () {
+                $('.pause-crontab').click(function () {
+                	console.log(10086);
+                    var id = $(this).attr('del_id');
+                    console.log(id);
+
+                    layer.confirm('确定变更此任务的状态？', {
+                        title: '变更任务状态',
+                        icon: 3,
+                    }, function (index) {
+                        // console.log(index);
+                        layer.close(index);
+                        $.ajax({
+                            url: "{:url('admin/Crontab/del')}",
+                            type: "post",
+                            data: {id: id},
+                            dataType: "JSON",
+                            success: function(data) {
+                                if (data.code == 1) {
+                                    layer.msg(data.msg, {
+                                        icon: 6,
+                                        time: 2000
+                                    }, function () {
+                                        location.href = data.url;
+                                    });
+                                } else {
+                                    layer.open({
+                                        title: '变更任务状态',
+                                        content: data.msg,
+                                        icon: 5,
+                                        anim: 6
+                                    });
+                                }
+                            }
+                        })
+                    });
                 });
                 return false;
             });
@@ -231,44 +259,9 @@
             });
 
 
-            $(function () {
-                $('.pause-crontab').click(function () {
-                    var id = $(this).attr('del_id');
-
-                    console.log(id);
-
-                    layer.confirm('确定变更此任务的状态？', {
-                        title: '变更任务状态',
-                        icon: 3,
-                    }, function (index) {
-                        // console.log(index);
-                        layer.close(index);
-                        $.ajax({
-                            url: "{:url('admin/Crontab/del')}",
-                            type: "post",
-                            data: {id: id},
-                            dataType: "JSON",
-                            success: function(data) {
-                                if (data.code == 1) {
-                                    layer.msg(data.msg, {
-                                        icon: 6,
-                                        time: 2000
-                                    }, function () {
-                                        location.href = data.url;
-                                    });
-                                } else {
-                                    layer.open({
-                                        title: '变更任务状态',
-                                        content: data.msg,
-                                        icon: 5,
-                                        anim: 6
-                                    });
-                                }
-                            }
-                        })
-                    });
-                });
-                return false;
+            $('.crontab-info').click(function () {
+                var keyword = $('#keyword').val();
+                location.href = "/admin/crontab/list?keyword="+keyword;
             });
         </script>
 

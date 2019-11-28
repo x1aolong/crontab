@@ -9,11 +9,21 @@ class Crontab extends Base
 {
     public function list ()
     {
-        $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(10);
-        $viewData = [
-            'crontabList' => $crontabList,
-            'searchTableList' => '',
-        ];
+        $keyword = input('keyword');
+
+        if ($keyword == '') {
+            $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(5);
+            $viewData = [
+                'crontabList' => $crontabList,
+                'normal' => 0
+            ];
+        } else {
+            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->order('run_time', 'asc')->paginate(100);
+            $viewData = [
+                'crontabList' => $searchTableList,
+                'normal' => 1
+            ];
+        }
         $this->assign($viewData);
         return view();
     }

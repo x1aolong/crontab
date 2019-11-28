@@ -12,7 +12,7 @@ class Crontab extends Base
         $keyword = input('keyword');
 
         if ($keyword == '') {
-            $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(5);
+            $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(10);
             $viewData = [
                 'crontabList' => $crontabList,
                 'normal' => 0
@@ -246,7 +246,7 @@ class Crontab extends Base
         }
     }
 
-    // 搜索
+    // 搜索 todo 待删除
     public function search()
     {
         if (request()->isAjax()){

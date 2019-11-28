@@ -12,13 +12,33 @@ class Crontab extends Base
         $keyword = input('keyword');
 
         if ($keyword == '') {
-            $crontabList = model('Crontab')->order('run_time', 'asc')->paginate(10);
+            $crontabList = model('Crontab')->where(['status' => 0])->order('run_time', 'asc')->paginate(10);
             $viewData = [
                 'crontabList' => $crontabList,
                 'normal' => 0
             ];
         } else {
-            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->order('run_time', 'asc')->paginate(100);
+            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->where(['status' => 0])->order('run_time', 'asc')->paginate(100);
+            $viewData = [
+                'crontabList' => $searchTableList,
+                'normal' => 1
+            ];
+        }
+        $this->assign($viewData);
+        return view();
+    }
+
+    public function stop_list(){
+        $keyword = input('keyword');
+
+        if ($keyword == '') {
+            $crontabList = model('Crontab')->where(['status' => 1])->order('run_time', 'asc')->paginate(10);
+            $viewData = [
+                'crontabList' => $crontabList,
+                'normal' => 0
+            ];
+        } else {
+            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->where(['status' => 1])->order('run_time', 'asc')->paginate(100);
             $viewData = [
                 'crontabList' => $searchTableList,
                 'normal' => 1

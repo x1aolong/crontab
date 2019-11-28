@@ -111,7 +111,7 @@
 
         <script>
             $(function () {
-                toAdd = "{:url('admin/Crontab/add')}"
+                toAdd = "{:url('admin/Crontab/add')}";
                 $('.jump2add').click(function () {
                     location.href = toAdd;
                 });
@@ -119,9 +119,9 @@
             });
 
             $(function () {
-                toPause = "{:url('admin/Crontab/pause')}"
+                toStop = "{:url('admin/Crontab/stop_list')}";
                 $('.jump2pause').click(function () {
-                    alert('页面建设中..');
+                    location.href = toStop;
                 });
                 return false;
             });

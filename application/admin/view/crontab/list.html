@@ -66,8 +66,8 @@
                                             <td>{$vo.ip}</td>
                                             <td>{$vo.shell_file}</td>
                                             <td>{$vo.parameter}</td>
-                                            <td>{if $vo.is_lock == 1} <span class="label label-success">有锁</span> {else} <span class="label">无锁</span> {/if}</td>
-                                            <td>{if $vo.status == 0} <span class="label label-success">启动</span> {else} <span class="label">暂停</span> {/if}</td>
+                                            <td>{if $vo.is_lock == 1} <span class="label label-primary">有锁</span> {else} <span class="label">无锁</span> {/if}</td>
+                                            <td>{if $vo.status == 0} <span class="label label-primary">启动</span> {else} <span class="label label-danger">暂停</span> {/if}</td>
                                             <td>
                                                 <a href="{:url('admin/crontab/edit', ['id' => $vo.id])}" class="btn btn-primary btn-bitbucket">
                                                     <i class="fa fa-wrench"></i>

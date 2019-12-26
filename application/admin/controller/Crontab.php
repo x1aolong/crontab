@@ -18,7 +18,12 @@ class Crontab extends Base
                 'normal' => 0
             ];
         } else {
-            $searchTableList = model('Crontab')->where('info', 'like', '%'.$keyword.'%')->where(['status' => 0])->order('run_time', 'asc')->paginate(100);
+            $searchTableList = model('Crontab')
+                ->where(['status' => 0])
+                ->where('info|shell_file', 'like', '%'.$keyword.'%')
+                ->order('run_time', 'asc')->paginate(100);
+           $sql = model('Crontab')->getLastSql();
+           echo $sql;
             $viewData = [
                 'crontabList' => $searchTableList,
                 'normal' => 1
